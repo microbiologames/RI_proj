@@ -10,6 +10,7 @@ import { appliquerFiltres, BarreFiltres, type EtatFiltres, type Facette } from '
 import { DiagrammeVenn } from '../components/Venn';
 import { Histogramme, type BarreDonnee } from '../components/Histogramme';
 import { CartouchePitch } from '../components/CartouchePitch';
+import { SuggestionPilote } from '../components/SuggestionPilote';
 import { BoutonExcel, EntetePage, EtatChargement, PanneauVisuel, useBase, useOptions, useReferentiels } from './commun';
 
 /** Axe de l'histogramme : ce qui est compté en abscisse. */
@@ -52,9 +53,17 @@ export function PageProjets() {
         valeurs: (p) => p.axes.map((a) => ({ id: `a${a.id}`, libelle: a.code, couleur: couleurAxe(a, sombre) })),
       },
       {
-        cle: 'pilote',
+        cle: 'pilotes',
         etiquette: 'Pilote',
-        valeurs: (p) => (p.pilote ? [{ id: `p${p.pilote.id}`, libelle: p.pilote.nom }] : [{ id: 'p0', libelle: 'Sans pilote' }]),
+        valeurs: (p) =>
+          p.pilotes.length
+            ? p.pilotes.map((x) => ({ id: `p${x.id}`, libelle: x.nom }))
+            : [{ id: 'p0', libelle: 'Sans pilote' }],
+      },
+      {
+        cle: 'qualification',
+        etiquette: 'Axes',
+        valeurs: (p) => (p.axes.length === 0 ? [{ id: 'x0', libelle: 'À qualifier' }] : []),
       },
       {
         cle: 'partenaires',
@@ -85,7 +94,7 @@ export function PageProjets() {
         p.titre,
         p.notes,
         p.contributions_adria,
-        p.pilote?.nom,
+        ...p.pilotes.map((x) => x.nom),
       ]),
     [base.lignes, facettes, filtres, recherche],
   );
@@ -108,7 +117,8 @@ export function PageProjets() {
           for (const a of p.axes) ajouter(`a${a.id}`, a.code, couleurAxe(a, sombre));
           break;
         case 'pilote':
-          ajouter(p.pilote ? `p${p.pilote.id}` : 'p0', p.pilote?.nom ?? 'Sans pilote');
+          if (p.pilotes.length === 0) ajouter('p0', 'Sans pilote');
+          else for (const x of p.pilotes) ajouter(`p${x.id}`, x.nom);
           break;
         case 'partenaire':
           if (p.partenaires.length === 0) ajouter('pt0', 'Sans partenaire');
@@ -141,7 +151,9 @@ export function PageProjets() {
       cle: 'titre',
       entete: 'Titre complet',
       largeur: '200px',
-      rendu: (p) => p.titre,
+      rendu: (p) => (
+        <span className="tronque-lignes" title={p.titre}>{p.titre}</span>
+      ),
       edition: (p, fin) => (
         <EditionTexte valeur={p.titre} terminer={fin} multiligne onValider={(v) => base.majChamp(p.id, 'titre', v)} />
       ),
@@ -170,21 +182,28 @@ export function PageProjets() {
       ),
     },
     {
-      cle: 'pilote',
-      entete: 'Pilote',
-      largeur: '115px',
-      valeur: (p) => p.pilote?.nom ?? '',
-      rendu: (p) => p.pilote?.nom ?? <span className="attenue">—</span>,
+      cle: 'pilotes',
+      entete: 'Pilote(s)',
+      largeur: '150px',
+      valeur: (p) => p.pilotes.map((x) => x.nom).join(' ; '),
+      rendu: (p) => (
+        <div className="etiquettes">
+          {p.pilotes.length ? (
+            p.pilotes.map((x) => <span key={x.id} className="chip chip-lecture">{x.nom}</span>)
+          ) : (
+            <span className="attenue">—</span>
+          )}
+        </div>
+      ),
       edition: (p, fin) => (
-        <SaisieAssistee
-          valeur={p.pilote_id}
-          options={options.personnes}
-          onChoisir={(id) => { base.majChamp(p.id, 'pilote_id', id); fin(); }}
-          onCreer={async (nom) => {
-            const c = await api.creerReference('personnes', { libelle: nom });
-            return { id: c.id, libelle: c.nom ?? nom };
-          }}
-        />
+        <>
+          <ChoixMultiple
+            valeurs={p.pilotes.map((x) => x.id)}
+            options={options.personnes}
+            onChanger={(ids) => base.majChamp(p.id, 'pilotes', ids)}
+          />
+          <button type="button" className="btn btn-s" style={{ marginTop: 6 }} onClick={fin}>Terminer</button>
+        </>
       ),
     },
     {
@@ -270,16 +289,21 @@ export function PageProjets() {
       entete: 'Axes',
       largeur: '175px',
       valeur: (p) => p.axes.map((a) => a.code).join(' '),
-      rendu: (p) => (
-        <div className="etiquettes">
-          {p.axes.map((a) => (
-            <span key={a.id} className="chip chip-lecture" title={a.libelle}>
-              <span className="pastille" style={{ background: couleurAxe(a, sombre) }} />
-              {a.code}
-            </span>
-          ))}
-        </div>
-      ),
+      rendu: (p) =>
+        p.axes.length === 0 ? (
+          <span className="a-qualifier" title="Aucune question de recherche rattachée : l'axe reste à saisir">
+            à qualifier
+          </span>
+        ) : (
+          <div className="etiquettes">
+            {p.axes.map((a) => (
+              <span key={a.id} className="chip chip-lecture" title={a.libelle}>
+                <span className="pastille" style={{ background: couleurAxe(a, sombre) }} />
+                {a.code}
+              </span>
+            ))}
+          </div>
+        ),
       edition: (p, fin) => (
         <>
           <ChoixMultiple
@@ -469,7 +493,6 @@ function FormulaireProjet({
     acronyme: '',
     titre: '',
     statut: 'en_preparation' as Statut,
-    pilote_id: null as number | null,
     date_debut: '',
     date_fin: '',
     budget_total: '',
@@ -478,6 +501,7 @@ function FormulaireProjet({
     contributions_adria: '',
   });
   const [axes, setAxes] = useState<number[]>([]);
+  const [pilotes, setPilotes] = useState<number[]>([]);
   const [partenairesChoisis, setPartenaires] = useState<number[]>([]);
   const [financements, setFinancements] = useState<number[]>([]);
   const [labellisations, setLabellisations] = useState<number[]>([]);
@@ -502,7 +526,7 @@ function FormulaireProjet({
                 acronyme: f.acronyme.trim(),
                 titre: f.titre.trim(),
                 statut: f.statut,
-                pilote_id: f.pilote_id,
+                pilotes,
                 date_debut: f.date_debut || null,
                 date_fin: f.date_fin || null,
                 budget_total: nombre(f.budget_total),
@@ -553,18 +577,6 @@ function FormulaireProjet({
 
       <div className="grille-champs">
         <label className="champ">
-          <span>Pilote <span className="requis">*</span></span>
-          <SaisieAssistee
-            valeur={f.pilote_id}
-            options={referentiels.personnes.map((p) => ({ id: p.id, libelle: p.nom }))}
-            onChoisir={(id) => setF({ ...f, pilote_id: id })}
-            onCreer={async (nom) => {
-              const c = await api.creerReference('personnes', { libelle: nom });
-              return { id: c.id, libelle: c.nom ?? nom };
-            }}
-          />
-        </label>
-        <label className="champ">
           <span>Début</span>
           <input type="date" value={f.date_debut} onChange={(e) => setF({ ...f, date_debut: e.target.value })} />
         </label>
@@ -594,6 +606,16 @@ function FormulaireProjet({
           />
         </label>
       </div>
+
+      <label className="champ">
+        <span>Pilote(s)</span>
+        <ChoixMultiple
+          valeurs={pilotes}
+          options={referentiels.personnes.filter((p) => p.equipe_ri).map((p) => ({ id: p.id, libelle: p.nom }))}
+          onChanger={setPilotes}
+        />
+        <SuggestionPilote axes={axes} pilotes={pilotes} onChoisir={(id: number) => setPilotes([...new Set([...pilotes, id])])} />
+      </label>
 
       <label className="champ">
         <span>Type de financement</span>

@@ -39,10 +39,27 @@ export function PageQuestions() {
         valeurs: (q) => (q.pilote ? [{ id: `p${q.pilote.id}`, libelle: q.pilote.nom }] : [{ id: 'p0', libelle: 'Sans pilote' }]),
       },
       {
-        cle: 'projet',
+        cle: 'projets',
         etiquette: 'Projet',
         valeurs: (q) =>
-          q.projet ? [{ id: `pr${q.projet.id}`, libelle: q.projet.acronyme }] : [{ id: 'pr0', libelle: 'Non rattachée' }],
+          q.projets.length
+            ? q.projets.map((p) => ({ id: `pr${p.id}`, libelle: p.acronyme }))
+            : [{ id: 'pr0', libelle: 'Non rattachée' }],
+      },
+      {
+        cle: 'transition',
+        etiquette: 'Transition',
+        valeurs: (q) => (q.transition ? [{ id: `t${q.transition.id}`, libelle: q.transition.libelle }] : []),
+      },
+      {
+        cle: 'qualification',
+        etiquette: 'Axes',
+        valeurs: (q) =>
+          q.axes.length === 0
+            ? [{ id: 'x0', libelle: 'À qualifier' }]
+            : q.problematique && !q.problematique.axes_valides
+              ? [{ id: 'x1', libelle: 'Proposition à relire' }]
+              : [{ id: 'x2', libelle: 'Validés' }],
       },
       {
         cle: 'grappe',
@@ -54,7 +71,7 @@ export function PageQuestions() {
   );
 
   const visibles = useMemo(
-    () => appliquerFiltres(base.lignes, facettes, filtres, recherche, (q) => [q.libelle, q.notes, q.pilote?.nom, q.projet?.acronyme]),
+    () => appliquerFiltres(base.lignes, facettes, filtres, recherche, (q) => [q.libelle, q.notes, q.pilote?.nom]),
     [base.lignes, facettes, filtres, recherche],
   );
 
@@ -86,39 +103,101 @@ export function PageQuestions() {
       ),
     },
     {
-      cle: 'projet',
-      entete: 'Projet',
-      largeur: '150px',
-      valeur: (q) => q.projet?.acronyme ?? '',
+      cle: 'projets',
+      entete: 'Projets',
+      largeur: '170px',
+      valeur: (q) => q.projets.map((p) => p.acronyme).join(' ; '),
+      rendu: (q) => (
+        <div className="etiquettes">
+          {q.projets.length ? (
+            q.projets.map((p) => (
+              <span key={p.id} className="chip chip-lecture" title={p.titre}>{p.acronyme}</span>
+            ))
+          ) : q.idees.length ? (
+            q.idees.map((i) => (
+              <span key={i.id} className="chip chip-lecture" title="Idée brute">💡 {i.libelle}</span>
+            ))
+          ) : (
+            <span className="attenue">—</span>
+          )}
+        </div>
+      ),
+      edition: (q, fin) => (
+        <>
+          <ChoixMultiple
+            valeurs={q.projets.map((p) => p.id)}
+            options={(projets.data ?? []).map((p) => ({ id: p.id, libelle: p.acronyme }))}
+            onChanger={(ids) => base.majChamp(q.id, 'projets', ids)}
+          />
+          <button type="button" className="btn btn-s" style={{ marginTop: 6 }} onClick={fin}>Terminer</button>
+        </>
+      ),
+    },
+    {
+      cle: 'problematique',
+      entete: 'Problématique',
+      largeur: '175px',
+      valeur: (q) => q.problematique?.libelle ?? '',
       rendu: (q) =>
-        q.projet ? (
-          <span className="chip chip-lecture" title={q.projet.titre}>{q.projet.acronyme}</span>
+        q.problematique ? (
+          <span title={q.problematique.axes_valides ? undefined : 'Rattachement aux axes à relire'}>
+            {q.problematique.libelle}
+            {!q.problematique.axes_valides && <span className="attenue"> ·  à relire</span>}
+          </span>
         ) : (
           <span className="attenue">—</span>
         ),
       edition: (q, fin) => (
         <SaisieAssistee
-          valeur={q.projet_id}
-          options={(projets.data ?? []).map((p) => ({ id: p.id, libelle: `${p.acronyme} — ${p.titre}` }))}
-          onChoisir={(id) => { base.majChamp(q.id, 'projet_id', id); fin(); }}
+          valeur={q.problematique_id}
+          options={(referentiels?.problematiques ?? []).map((x) => ({ id: x.id, libelle: x.libelle }))}
+          onChoisir={(id) => { base.majChamp(q.id, 'problematique_id', id); fin(); }}
+          onCreer={async (libelle) => {
+            const c = await api.creerReference('problematiques', { libelle });
+            return { id: c.id, libelle: c.libelle ?? libelle };
+          }}
+        />
+      ),
+    },
+    {
+      cle: 'transition',
+      entete: 'Transition alimentaire',
+      secondaire: true,
+      largeur: '180px',
+      valeur: (q) => q.transition?.libelle ?? '',
+      rendu: (q) => q.transition?.libelle ?? <span className="attenue">—</span>,
+      edition: (q, fin) => (
+        <SaisieAssistee
+          valeur={q.transition_id}
+          options={(referentiels?.transitions ?? []).map((x) => ({ id: x.id, libelle: x.libelle }))}
+          onChoisir={(id) => { base.majChamp(q.id, 'transition_id', id); fin(); }}
+          onCreer={async (libelle) => {
+            const c = await api.creerReference('transitions', { libelle });
+            return { id: c.id, libelle: c.libelle ?? libelle };
+          }}
         />
       ),
     },
     {
       cle: 'axes',
-      entete: 'Axes de recherche',
-      largeur: '210px',
+      entete: 'Axes',
+      largeur: '120px',
       valeur: (q) => q.axes.map((a) => a.code).join(' '),
-      rendu: (q) => (
-        <div className="etiquettes">
-          {q.axes.map((a) => (
-            <span key={a.id} className="chip chip-lecture" title={a.libelle}>
-              <span className="pastille" style={{ background: couleurAxe(a, sombre) }} />
-              {a.code}
-            </span>
-          ))}
-        </div>
-      ),
+      rendu: (q) =>
+        q.axes.length === 0 ? (
+          <span className="a-qualifier" title="Axe non renseigné — voir la page Qualification">
+            à qualifier
+          </span>
+        ) : (
+          <div className="etiquettes">
+            {q.axes.map((a) => (
+              <span key={a.id} className="chip chip-lecture" title={a.libelle}>
+                <span className="pastille" style={{ background: couleurAxe(a, sombre) }} />
+                {a.code}
+              </span>
+            ))}
+          </div>
+        ),
       edition: (q, fin) => (
         <>
           <ChoixMultiple
@@ -136,14 +215,16 @@ export function PageQuestions() {
     {
       cle: 'grappe',
       entete: 'Grappe',
-      largeur: '140px',
+      secondaire: true,
+      largeur: '130px',
       valeur: (q) => q.grappe?.nom ?? '',
       rendu: (q) => (q.grappe ? <span className="chip chip-lecture">{q.grappe.nom}</span> : <span className="attenue">—</span>),
     },
     {
       cle: 'maj_le',
       entete: 'Modifiée',
-      largeur: '120px',
+      secondaire: true,
+      largeur: '115px',
       valeur: (q) => q.maj_le,
       rendu: (q) => <span className="attenue petit">{formaterDateHeure(q.maj_le)}</span>,
     },
@@ -195,6 +276,7 @@ export function PageQuestions() {
       <Tableau
         lignes={visibles}
         colonnes={colonnes}
+        cleColonnes="questions"
         selection={selection}
         onSelection={setSelection}
         onDeposer={(source, cible) => setSelection([...new Set([...selection, source, cible])])}
@@ -239,7 +321,8 @@ function FormulaireQuestion({
   const [libelle, setLibelle] = useState('');
   const [axes, setAxes] = useState<number[]>([]);
   const [piloteId, setPiloteId] = useState<number | null>(null);
-  const [projetId, setProjetId] = useState<number | null>(null);
+  const [projetsChoisis, setProjetsChoisis] = useState<number[]>([]);
+  const [problematiqueId, setProblematiqueId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
 
   const valide = libelle.trim().length > 0 && axes.length > 0;
@@ -260,7 +343,8 @@ function FormulaireQuestion({
                 libelle: libelle.trim(),
                 axes,
                 pilote_id: piloteId,
-                projet_id: projetId,
+                projets: projetsChoisis,
+                problematique_id: problematiqueId,
                 notes: notes.trim() || null,
               })
             }
@@ -300,15 +384,28 @@ function FormulaireQuestion({
           />
         </label>
         <label className="champ">
-          <span>Projet</span>
+          <span>Problématique</span>
           <SaisieAssistee
-            valeur={projetId}
-            options={projets.map((p) => ({ id: p.id, libelle: `${p.acronyme} — ${p.titre}` }))}
-            onChoisir={setProjetId}
-            placeholder="Aucun"
+            valeur={problematiqueId}
+            options={referentiels.problematiques.map((x) => ({ id: x.id, libelle: x.libelle }))}
+            onChoisir={setProblematiqueId}
+            onCreer={async (libelle) => {
+              const c = await api.creerReference('problematiques', { libelle });
+              return { id: c.id, libelle: c.libelle ?? libelle };
+            }}
+            placeholder="Aucune"
           />
         </label>
       </div>
+
+      <label className="champ">
+        <span>Projets qui travaillent cette question</span>
+        <ChoixMultiple
+          valeurs={projetsChoisis}
+          options={projets.map((p) => ({ id: p.id, libelle: p.acronyme }))}
+          onChanger={setProjetsChoisis}
+        />
+      </label>
 
       <label className="champ">
         <span>Notes</span>

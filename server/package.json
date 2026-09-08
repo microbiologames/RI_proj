@@ -17,6 +17,7 @@
     "@fastify/static": "^8.0.3",
     "fastify": "^5.2.0",
     "pg": "^8.13.1",
+    "xlsx": "^0.18.5",
     "zod": "^4.5.4"
   },
   "devDependencies": {

@@ -48,12 +48,17 @@ export const RESSOURCES: Record<string, Ressource> = {
     champs: {
       libelle: texteCourt,
       pilote_id: idRef,
-      projet_id: idRef,
       grappe_id: idRef,
+      transition_id: idRef,
+      problematique_id: idRef,
       notes: texteLong,
     },
     liaisons: {
+      // Les axes d'une question découlent normalement de sa problématique
+      // (page Qualification) ; ils restent modifiables au cas par cas.
       axes: { table: 'question_axes', cleLocale: 'question_id', cleEtrangere: 'axe_id', obligatoire: true },
+      projets: { table: 'question_projets', cleLocale: 'question_id', cleEtrangere: 'projet_id' },
+      idees: { table: 'question_idees', cleLocale: 'question_id', cleEtrangere: 'idee_id' },
     },
   },
 
@@ -66,14 +71,21 @@ export const RESSOURCES: Record<string, Ressource> = {
     ordre: 'maj_le DESC',
     champs: {
       libelle: texteCourt,
+      titre: z.string().trim().max(1000).nullish(),
+      // Une idée reste brute tant que le CODIR ne l'a pas validée ; une fois
+      // validée elle devient un projet « en préparation ».
+      statut: z.enum(['brute', 'attente_codir', 'attente_financement']),
       pilote_id: idRef,
       partenaire_id: idRef,
       grappe_id: idRef,
       projet_id: idRef,
+      transition_id: idRef,
+      problematique_id: idRef,
       notes: texteLong,
     },
     liaisons: {
       axes: { table: 'idee_axes', cleLocale: 'idee_id', cleEtrangere: 'axe_id', obligatoire: true },
+      questions: { table: 'question_idees', cleLocale: 'idee_id', cleEtrangere: 'question_id' },
     },
   },
 
@@ -88,7 +100,6 @@ export const RESSOURCES: Record<string, Ressource> = {
       acronyme: z.string().trim().min(1).max(60),
       titre: texteCourt,
       statut: z.enum(['en_preparation', 'en_cours', 'termine', 'abandonne']),
-      pilote_id: idRef,
       date_debut: dateIso,
       date_fin: dateIso,
       budget_total: montant,
@@ -99,9 +110,11 @@ export const RESSOURCES: Record<string, Ressource> = {
     },
     liaisons: {
       axes: { table: 'projet_axes', cleLocale: 'projet_id', cleEtrangere: 'axe_id', obligatoire: true },
+      pilotes: { table: 'projet_pilotes', cleLocale: 'projet_id', cleEtrangere: 'personne_id' },
       partenaires: { table: 'projet_partenaires', cleLocale: 'projet_id', cleEtrangere: 'partenaire_id' },
       financements: { table: 'projet_financements', cleLocale: 'projet_id', cleEtrangere: 'financement_id' },
       labellisations: { table: 'projet_labellisations', cleLocale: 'projet_id', cleEtrangere: 'labellisation_id' },
+      questions: { table: 'question_projets', cleLocale: 'projet_id', cleEtrangere: 'question_id' },
     },
   },
 
@@ -114,14 +127,20 @@ export const RESSOURCES: Record<string, Ressource> = {
     ordre: 'nom ASC',
     champs: {
       nom: texteCourt,
-      ville: z.string().trim().min(1).max(160),
-      pays: z.string().trim().min(1).max(120),
+      // Les partenaires du référentiel n'ont pas tous de ville : un réseau ou
+      // un consortium n'a pas d'implantation propre.
+      ville: z.string().trim().max(160).nullish(),
+      pays: z.string().trim().max(120).nullish(),
+      zone: z.string().trim().max(20).nullish(),
+      categorie_id: idRef,
+      utile_pour: texteLong,
+      localisation_source: z.enum(['saisie', 'recherche_web', 'deduite_du_nom', 'estimee', 'sans_lieu']).optional(),
       latitude: z.number().min(-90).max(90).nullish(),
       longitude: z.number().min(-180).max(180).nullish(),
       notes: texteLong,
     },
     liaisons: {
-      expertises: { table: 'partenaire_expertises', cleLocale: 'partenaire_id', cleEtrangere: 'expertise_id', obligatoire: true },
+      expertises: { table: 'partenaire_expertises', cleLocale: 'partenaire_id', cleEtrangere: 'expertise_id' },
       projets: { table: 'projet_partenaires', cleLocale: 'partenaire_id', cleEtrangere: 'projet_id' },
     },
   },

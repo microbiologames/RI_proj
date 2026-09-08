@@ -34,11 +34,13 @@ production, une seule image sert les deux (`web/dist` est copié dans
 
 | Page | Contenu |
 |---|---|
-| Questions de recherche | Tableau éditable, rattachement à un ou plusieurs axes (obligatoire), à un pilote et à un projet (facultatifs) |
-| Idées brutes | Même structure que les projets, informations manquantes assumées ; bascule en projet « en préparation » |
-| Projets | Tableau complet, diagramme de Venn des 4 axes, histogramme paramétrable, cartouche pitch |
-| Partenaires | Lieu, expertise, projets liés, cartographie |
+| Questions de recherche | Tableau éditable ; transition alimentaire, problématique, axes, pilote et projets (une question peut être travaillée par plusieurs projets, ou aucun) |
+| Idées brutes | Même structure que les projets, informations manquantes assumées. Trois stades : idée brute, attente validation CODIR, attente financement. Bascule en projet « en préparation » une fois validée |
+| Projets | Tableau complet, plusieurs pilotes et financeurs, diagramme de Venn des 4 axes, histogramme paramétrable, cartouche pitch |
+| Partenaires | Lieu, zone, catégorie, expertise, projets liés, cartographie |
 | Transferts | Type, lieu, pilotes, projet lié, cartographie et répartition par type |
+| Équipe | Expertises de chacun, charge portée, compétences à un seul porteur ; alimente la suggestion de pilote |
+| Qualification | Rattachement des problématiques aux axes de la feuille de route, avec propagation aux questions, projets et idées |
 | Journal | Historique horodaté de toutes les écritures |
 | Réglages | Nom pour le journal, axes de recherche, géocodage, état du module d'acquisition |
 
@@ -99,10 +101,55 @@ docs/     modèle de données, déploiement, décisions
 Détails : [`docs/modele-de-donnees.md`](docs/modele-de-donnees.md) ·
 [`docs/deploiement.md`](docs/deploiement.md) · [`docs/decisions.md`](docs/decisions.md)
 
-## Import depuis Microsoft List
+## Reprise des données ADRIA
 
-Exporter chaque liste en CSV depuis MS List, puis, **dans l'ordre** (les
-partenaires et projets doivent exister avant ce qui les référence) :
+Les données de départ (classeur de contexte + export CSV des questions) se
+chargent en une commande :
+
+```bash
+cd server
+npx tsx src/import-adria.ts contexte.xlsx questions.csv              # simulation
+npx tsx src/import-adria.ts contexte.xlsx questions.csv --appliquer  # écrit en base
+```
+
+`--vider` remet les bases à zéro avant l'import. **Sans `--appliquer`, rien
+n'est écrit** : le script affiche ce qu'il ferait et ce qu'il ne sait pas
+rattacher.
+
+Ce qu'il traite, et pourquoi :
+
+| Donnée d'origine | Traitement |
+|---|---|
+| Séparateur `;#` de SharePoint | Découpé ; les identifiants numériques qui suivent chaque valeur sont retirés |
+| `Yvan LE MARC - ADRIA;#19` | Ramené au collaborateur de l'onglet Équipe |
+| Statuts « Attente financement » et « Attente validation CODIR » | Importés en **idées brutes** : une idée reste brute tant que le CODIR ne l'a pas validée |
+| Colonne `UMT` à « oui » | Ajoutée comme labellisation, l'équipe la lit ainsi |
+| `Auto-financement` | Converti en pourcentage de financement externe : `(1 − auto / budget ADRIA) × 100` |
+| Partenaires cités par un projet mais absents du référentiel | Créés sans localisation plutôt qu'ignorés, pour ne pas perdre le partenariat |
+| Villes des partenaires | Depuis `server/donnees/villes-partenaires.json`, où chaque entrée indique d'où vient l'information |
+| Problématiques | Rattachées aux axes selon `server/donnees/problematiques-axes.json`, **marquées à valider** |
+
+Le script signale, sans les corriger de lui-même, les acronymes qui ne
+diffèrent que par la casse (`SPOREFISH` / `Sporefish`) et les projets restés
+sans axe.
+
+### Qualifier les axes après l'import
+
+Les données de MS List ne portent aucun axe de recherche : elles portent une
+**problématique**. La page **Qualification** rattache chaque problématique à un
+ou plusieurs axes et propage aussitôt aux questions, puis aux projets et idées
+qui s'y rattachent — 35 décisions suffisent à qualifier 66 questions.
+
+Les rattachements proposés au départ sont **une suggestion**, affichée comme
+telle jusqu'à relecture. Les projets sans aucune question rattachée ne peuvent
+pas être déduits : ils portent un marqueur « à qualifier » et se renseignent
+depuis la page Projets.
+
+## Import d'autres listes Microsoft List
+
+Pour reprendre une liste ultérieurement, `import-mslist.ts` importe un CSV
+générique, **dans l'ordre** (les partenaires et projets doivent exister avant
+ce qui les référence) :
 
 ```bash
 cd server

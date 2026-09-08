@@ -78,6 +78,27 @@ export const api = {
     return requete<import('./types').EntreeJournal[]>(`/journal?${qs}`);
   },
 
+  problematiques: () => requete<import('./types').Problematique[]>('/problematiques'),
+  modifierProblematique: (id: number, corps: unknown) =>
+    requete<import('./types').Problematique>(`/problematiques/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(corps),
+    }),
+  validerToutesProblematiques: () =>
+    requete<{ validees: number }>('/qualification/valider-tout', { method: 'POST' }),
+  etatQualification: () => requete<import('./types').EtatQualification>('/qualification/etat'),
+  feuilleDeRoute: () => requete<import('./types').ScopeFeuilleDeRoute[]>('/feuille-de-route'),
+
+  equipe: () => requete<import('./types').PersonneDetail[]>('/equipe'),
+  matriceExpertises: () =>
+    requete<Array<{ id: number; libelle: string; domaine: string | null; personnes: Array<{ id: number; nom: string; equipe_ri: boolean }> }>>(
+      '/equipe/expertises',
+    ),
+  suggestionPilote: (expertises: number[], axes: number[]) => {
+    const qs = new URLSearchParams({ expertises: expertises.join(','), axes: axes.join(',') });
+    return requete<import('./types').SuggestionPilote[]>(`/equipe/suggestion-pilote?${qs}`);
+  },
+
   etatAdm: () => requete<{ disponible: boolean; modele: string }>('/adm/etat'),
   analyserAdm: (cible: string, texte: string) =>
     requete<PropositionAdm>('/adm/analyser', { method: 'POST', body: JSON.stringify({ cible, texte }) }),

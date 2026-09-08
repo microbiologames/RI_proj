@@ -1,0 +1,42 @@
+{
+  "_lisezmoi": "PROPOSITION de rattachement des problématiques aux 4 axes de la feuille de route, établie par lecture des scopes de chaque axe. Ce sont des suggestions, pas des données : elles arrivent dans l'application marquées « à valider » et se corrigent depuis la page Qualification. Codes : AXE1 détection de signaux faibles et dangers émergents · AXE2 reproduction des contaminations naturelles · AXE3 simulation des phénomènes · AXE4 éclairage dans les transitions alimentaires.",
+
+  "Représentativité de l'innoculum":                        { "axes": ["AXE2"], "motif": "inoculation artificielle et biais de représentativité (scope AXE2)" },
+  "Standardisation des approches expérimentales":           { "axes": ["AXE2"], "motif": "amélioration des approches expérimentales et standardisation (contribution AXE2)" },
+
+  "Diagnostic des contaminations sporulés":                 { "axes": ["AXE1"], "motif": "technologies de détection et quantification (scope AXE1)" },
+  "Diagnostic des contaminations d'altération":             { "axes": ["AXE1"], "motif": "technologies de détection et quantification (scope AXE1)" },
+  "Diagnostic des contaminations pathogènes":               { "axes": ["AXE1"], "motif": "technologies de détection et quantification (scope AXE1)" },
+  "Toxines et mycotoxines émergentes":                      { "axes": ["AXE1"], "motif": "émergence de nouveaux dangers et métabolites associés (scope AXE1)" },
+  "Performance des méthodes analytiques émergentes":        { "axes": ["AXE1"], "motif": "émergence de nouvelles technologies de détection (scope AXE1)" },
+  "Performances des méthodes analytiques":                  { "axes": ["AXE1"], "motif": "émergence de nouvelles technologies de détection (scope AXE1)" },
+  "Cultivabilité des micro-organismes endémiques":          { "axes": ["AXE1"], "motif": "difficultés de cultivabilité des cibles microbiologiques (scope AXE1)" },
+  "Sélectivité et sensibilité d'un bouillon d'enrichissement dans une matrice complexe": { "axes": ["AXE1"], "motif": "cultivabilité et détectabilité des cibles (scope AXE1)" },
+  "Performance des méthodes analytiques pour les matrices émergentes": { "axes": ["AXE1", "AXE4"], "motif": "détection sur des matrices issues des transitions" },
+
+  "Modélisation des réponses biologiques complexes":        { "axes": ["AXE3"], "motif": "fiabilité et accessibilité des modèles (scope AXE3)" },
+  "Modélisation de réponses biologiques complexes":         { "axes": ["AXE3"], "motif": "variante orthographique de la précédente" },
+  "Aggrégation de données hétérogènes":                     { "axes": ["AXE3"], "motif": "agrégation et exploitation de données hétérogènes (scope AXE3)" },
+  "Génération de données de microbiologie prévisionnelle":  { "axes": ["AXE3"], "motif": "fiabilité et accessibilité des données (scope AXE3)" },
+  "Jumeaux numériques au service de la fermentation":       { "axes": ["AXE3"], "motif": "simulation des phénomènes biologiques (AXE3)" },
+  "Applicabilité des jumeaux numériques":                   { "axes": ["AXE3"], "motif": "simulation des phénomènes biologiques (AXE3)" },
+  "Prédiction de l'oxydation des produits riches en matières grasses": { "axes": ["AXE3"], "motif": "simulation des phénomènes physico-chimiques (AXE3)" },
+  "Optimiser l'action antimicrobienne dans les matrices complexes": { "axes": ["AXE3", "AXE4"], "motif": "modélisation croissance/non-croissance, au service du retrait d'additifs" },
+
+  "Maîtrise des contaminations sporulés":                   { "axes": ["AXE4"], "motif": "maîtrise dans le contexte des transitions (protéines alternatives, retrait d'additifs)" },
+  "Maîtrise des contaminations fongiques":                  { "axes": ["AXE4"], "motif": "maîtrise dans le contexte des transitions (retrait d'additifs)" },
+  "Maîtrise des contaminations":                            { "axes": ["AXE4"], "motif": "maîtrise dans le contexte des transitions" },
+  "Risque de contamination des emballages réemployables":   { "axes": ["AXE4"], "motif": "ambiguïté des transitions : le réemploi crée un risque nouveau (scope AXE4)" },
+  "Compromis d'un emballage performant et réaliste":        { "axes": ["AXE4"], "motif": "contradiction entre durabilité et compétitivité (scope AXE4)" },
+  "Réduction des propriétés barrières":                     { "axes": ["AXE4"], "motif": "conséquence de la transition emballage (scope AXE4)" },
+  "Erosion des compétences IAA":                            { "axes": ["AXE4"], "motif": "compétitivité du secteur face aux transitions (scope AXE4)" },
+  "Connaissances et compétences des acteurs d'une filière": { "axes": ["AXE4"], "motif": "compétitivité du secteur face aux transitions (scope AXE4)" },
+  "Prévision du comportement consommateur":                 { "axes": ["AXE4"], "motif": "acceptabilité des transitions alimentaires (scope AXE4)" },
+  "Perte de qualités organoleptiques":                      { "axes": ["AXE4"], "motif": "contrepartie du retrait d'ingrédients (scope AXE4)" },
+  "Evaluation des fonctionnalités":                         { "axes": ["AXE4"], "motif": "valorisation de bioressources et protéines alternatives (scope AXE4)" },
+  "Valorisation d'une bioressource":                        { "axes": ["AXE4"], "motif": "valorisation de bioressources (scope AXE4)" },
+  "Performance des procédés alternatifs":                   { "axes": ["AXE4"], "motif": "montée en échelle des procédés issus des transitions (contribution AXE4)" },
+  "Compromis entre la sécurité microbiologique et les propriétés fonctionnelles": { "axes": ["AXE4"], "motif": "arbitrage propre aux transitions (scope AXE4)" },
+  "Sécurité sanitaire associé aux pratiques de réduction de consommation énergétique": { "axes": ["AXE3", "AXE4"], "motif": "sobriété énergétique évaluée par microbiologie prévisionnelle" },
+  "Optimisation des procédés de nettoyage désinfection en fonction de la contamination de l'environnement de production": { "axes": ["AXE1", "AXE4"], "motif": "diagnostic de l'environnement de production, au service d'un nettoyage plus sobre" }
+}

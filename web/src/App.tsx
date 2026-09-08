@@ -10,6 +10,8 @@ import { PagePartenaires } from './pages/Partenaires';
 import { PageTransferts } from './pages/Transferts';
 import { PageJournal } from './pages/Journal';
 import { PageReglages } from './pages/Reglages';
+import { PageQualification } from './pages/Qualification';
+import { PageEquipe } from './pages/Equipe';
 
 type Theme = 'clair' | 'sombre' | 'systeme';
 
@@ -41,6 +43,13 @@ export function App() {
     staleTime: 15_000,
   });
 
+  // Compteur de la navigation : ce qui reste à qualifier.
+  const qualification = useQuery({
+    queryKey: ['qualification'],
+    queryFn: api.etatQualification,
+    staleTime: 30_000,
+  });
+
   return (
     <div className="appli">
       <nav className="barre-laterale">
@@ -63,6 +72,26 @@ export function App() {
         ))}
 
         <hr style={{ border: 'none', borderTop: '1px solid var(--bordure)', margin: '10px 4px' }} />
+
+        <Link href="/equipe" className="lien-nav" aria-current={emplacement === '/equipe' ? 'page' : undefined}>
+          <span aria-hidden="true">👥</span> Équipe
+        </Link>
+        <Link
+          href="/qualification"
+          className="lien-nav"
+          aria-current={emplacement === '/qualification' ? 'page' : undefined}
+        >
+          <span aria-hidden="true">🎯</span> Qualification
+          {(qualification.data?.problematiques ?? 0) > (qualification.data?.problematiques_validees ?? 0) && (
+            <span
+              className="compte"
+              title="Problématiques dont le rattachement aux axes reste à relire"
+              style={{ background: 'var(--attention)', color: '#17170f', borderRadius: 999, padding: '0 6px', fontWeight: 700 }}
+            >
+              {(qualification.data?.problematiques ?? 0) - (qualification.data?.problematiques_validees ?? 0)}
+            </span>
+          )}
+        </Link>
 
         <Link href="/journal" className="lien-nav" aria-current={emplacement === '/journal' ? 'page' : undefined}>
           <span aria-hidden="true">🕘</span> Journal
@@ -103,6 +132,8 @@ export function App() {
           <Route path="/projets" component={PageProjets} />
           <Route path="/partenaires" component={PagePartenaires} />
           <Route path="/transferts" component={PageTransferts} />
+          <Route path="/equipe" component={PageEquipe} />
+          <Route path="/qualification" component={PageQualification} />
           <Route path="/journal" component={PageJournal} />
           <Route path="/reglages" component={PageReglages} />
           <Route component={PageProjets} />

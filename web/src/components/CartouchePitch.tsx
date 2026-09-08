@@ -44,7 +44,7 @@ export function CartouchePitch({
     >
       <div ref={zone} className="pile" style={{ background: 'var(--surface)', padding: 2 }}>
         {projets.map((p) => {
-          const liees = questions.filter((q) => q.projet_id === p.id);
+          const liees = questions.filter((q) => q.projets.some((x) => x.id === p.id));
           return (
             <article
               key={p.id}
@@ -110,7 +110,13 @@ export function CartouchePitch({
                   )}
                 </Bloc>
 
-                <Bloc titre="Pilote">{p.pilote?.nom ?? <span className="attenue">Non renseigné</span>}</Bloc>
+                <Bloc titre="Pilote(s)">
+                  {p.pilotes.length ? (
+                    p.pilotes.map((x) => x.nom).join(', ')
+                  ) : (
+                    <span className="attenue">Non renseigné</span>
+                  )}
+                </Bloc>
               </div>
 
               <Bloc titre="Questions de recherche">

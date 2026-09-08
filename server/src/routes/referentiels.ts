@@ -15,6 +15,9 @@ const TABLES = {
   financements: { table: 'types_financement', ordre: 'ordre, libelle', libelle: 'libelle' },
   labellisations: { table: 'labellisations', ordre: 'libelle', libelle: 'libelle' },
   types_transfert: { table: 'types_transfert', ordre: 'ordre, libelle', libelle: 'libelle' },
+  transitions: { table: 'transitions_alimentaires', ordre: 'libelle', libelle: 'libelle' },
+  problematiques: { table: 'problematiques', ordre: 'libelle', libelle: 'libelle' },
+  categories_partenaire: { table: 'categories_partenaire', ordre: 'libelle', libelle: 'libelle' },
 } as const;
 
 type CleReferentiel = keyof typeof TABLES;

@@ -33,6 +33,59 @@ supprimé dans `details` — une suppression est donc reconstituable — et
 de l'hébergement. **Ce dernier point n'est pas optionnel** : publiée sur Internet
 sans protection, l'application est modifiable par n'importe qui.
 
+## Les axes se déduisent de la problématique
+
+Les données de départ ne portent aucun axe de recherche : les questions y sont
+classées par **problématique** et par **transition alimentaire**. Trois options
+se présentaient — rendre l'axe facultatif et le saisir 135 fois, l'imposer et
+rejeter l'import, ou qualifier le niveau intermédiaire.
+
+C'est la troisième qui a été retenue : rattacher les 35 problématiques aux axes
+qualifie d'un coup les 66 questions, puis les projets et idées liés. Le
+rattachement livré est **une proposition**, établie en lisant les scopes de la
+feuille de route, et affichée comme telle jusqu'à relecture — un rattachement
+deviné qui se ferait passer pour une donnée serait pire que pas de rattachement
+du tout.
+
+**Ce que cela coûte** : le cahier des charges demandait un axe obligatoire
+partout. L'obligation est maintenue à la création depuis un formulaire, mais une
+entrée importée sans axe est acceptée et marquée « à qualifier ». Sans cet
+assouplissement, aucune des 135 entrées existantes n'aurait pu entrer.
+
+**Ce qui reste hors de portée** : 27 projets n'ont aucune question rattachée.
+Leur axe ne se déduit de rien et doit être saisi à la main.
+
+## Les statuts « en attente » sont des idées, pas des projets
+
+L'export MS List porte six statuts. Deux d'entre eux — « Attente validation
+CODIR » et « Attente financement » — décrivent une idée qui n'a pas encore été
+validée, non un projet. Ils sont donc importés dans la base des idées brutes,
+où ils deviennent un stade d'avancement (`statut_idee`).
+
+Les projets gardent ainsi les quatre statuts du cahier des charges, et le
+principe posé par l'équipe est respecté : une idée reste brute tant que le CODIR
+ne l'a pas validée ; elle devient ensuite un projet « en préparation ».
+
+## Les villes des partenaires sont tracées, pas seulement devinées
+
+Le référentiel des partenaires ne donne qu'une zone (FR/EU/ER), alors que la
+cartographie demandée a besoin de coordonnées. Les 35 villes ont donc été
+renseignées : une dizaine par recherche en ligne, six déduites du nom du
+partenaire, les autres d'après la connaissance générale des organismes.
+
+Plutôt que de présenter le tout comme des données saisies,
+`localisation_source` conserve l'origine de chaque valeur et l'interface signale
+les villes estimées. La convention retenue est le **siège social** — le seul
+choix vérifiable et cohérent d'un partenaire à l'autre. Quatre réseaux et
+consortiums restent sans lieu : ils n'ont pas d'implantation propre, et leur en
+inventer une aurait faussé la carte.
+
+## Les partenaires cités par un projet sont créés, pas ignorés
+
+L'onglet Partenaires ne liste que les partenaires stratégiques ; les projets en
+citent 69 autres. Les ignorer aurait perdu autant de partenariats réels. Ils
+sont donc créés sans localisation, avec une note disant d'où ils viennent.
+
 ## Diagramme de Venn : quatre ellipses, en contour
 
 **Quatre cercles ne peuvent pas produire un Venn à 4 ensembles** — ils ne
@@ -84,6 +137,20 @@ un axe inexistant est filtré avant même d'atteindre l'écran de validation.
 
 Le module est optionnel : sans `ANTHROPIC_API_KEY` il se désactive proprement et
 la saisie manuelle reste disponible partout.
+
+## La suggestion de pilote propose, elle ne décide pas
+
+La matrice d'expertises croise 18 compétences et 11 collaborateurs : de quoi
+proposer un pilote à la création d'un projet. Le score combine la couverture des
+expertises demandées, l'expérience sur les axes visés et la charge en cours.
+
+Chaque proposition affiche **les raisons de son classement**, et rien n'est
+appliqué sans clic. Un score qui déciderait seul du pilote d'un projet serait à
+la fois faux et mal accepté ; ordonner une liste de candidats est utile et
+vérifiable.
+
+Le même croisement fait apparaître les expertises portées par une seule
+personne — une information de pilotage que la matrice brute ne montrait pas.
 
 ## API générique par descripteurs
 

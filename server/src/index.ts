@@ -12,6 +12,8 @@ import { enregistrerGrappes } from './routes/grappes.js';
 import { enregistrerJournal } from './routes/journal.js';
 import { enregistrerGeocodage } from './routes/geocodage.js';
 import { enregistrerAdm } from './routes/adm.js';
+import { enregistrerQualification } from './routes/qualification.js';
+import { enregistrerEquipe } from './routes/equipe.js';
 import { pool } from './db.js';
 
 const app = Fastify({
@@ -34,6 +36,8 @@ enregistrerGrappes(app);
 enregistrerJournal(app);
 enregistrerGeocodage(app);
 enregistrerAdm(app);
+enregistrerQualification(app);
+enregistrerEquipe(app);
 
 // En production, la même image sert l'API et le front compilé.
 const racineStatique = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');

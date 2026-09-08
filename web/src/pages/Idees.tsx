@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import type { Idee, Partenaire } from '../lib/types';
+import type { Idee, Partenaire, StatutIdee } from '../lib/types';
+import { COULEURS_STATUT_IDEE, LIBELLES_STATUT_IDEE } from '../lib/types';
 import { couleurAxe, formaterDateHeure, useThemeSombre } from '../lib/utils';
 import { Bandeau, ChoixMultiple, Modale, SaisieAssistee } from '../components/Base';
 import { EditionTexte, Tableau, type Colonne } from '../components/Tableau';
@@ -45,6 +46,16 @@ export function PageIdees() {
           i.partenaire ? [{ id: `pt${i.partenaire.id}`, libelle: i.partenaire.nom }] : [{ id: 'pt0', libelle: 'Sans partenaire' }],
       },
       {
+        cle: 'statut',
+        etiquette: 'Statut',
+        valeurs: (i) => [{ id: i.statut, libelle: LIBELLES_STATUT_IDEE[i.statut], couleur: COULEURS_STATUT_IDEE[i.statut] }],
+      },
+      {
+        cle: 'qualification',
+        etiquette: 'Axes',
+        valeurs: (i) => (i.axes.length === 0 ? [{ id: 'x0', libelle: 'À qualifier' }] : []),
+      },
+      {
         cle: 'maturite',
         etiquette: 'Maturité',
         valeurs: (i) =>
@@ -73,9 +84,42 @@ export function PageIdees() {
     {
       cle: 'libelle',
       entete: 'Idée brute',
-      rendu: (i) => i.libelle,
+      rendu: (i) => (
+        <>
+          {i.libelle}
+          {i.titre && i.titre !== i.libelle && (
+            <span className="attenue petit tronque-lignes" style={{ display: '-webkit-box' }} title={i.titre}>
+              {i.titre}
+            </span>
+          )}
+        </>
+      ),
       edition: (i, fin) => (
         <EditionTexte valeur={i.libelle} terminer={fin} multiligne onValider={(v) => base.majChamp(i.id, 'libelle', v)} />
+      ),
+    },
+    {
+      cle: 'statut',
+      entete: 'Statut',
+      largeur: '175px',
+      valeur: (i) => LIBELLES_STATUT_IDEE[i.statut],
+      rendu: (i) => (
+        <span className="pastille-statut">
+          <span className="point" style={{ background: COULEURS_STATUT_IDEE[i.statut] }} />
+          {LIBELLES_STATUT_IDEE[i.statut]}
+        </span>
+      ),
+      edition: (i, fin) => (
+        <select
+          autoFocus
+          defaultValue={i.statut}
+          onChange={(e) => { base.majChamp(i.id, 'statut', e.target.value as StatutIdee); fin(); }}
+          onBlur={fin}
+        >
+          {Object.entries(LIBELLES_STATUT_IDEE).map(([v, l]) => (
+            <option key={v} value={v}>{l}</option>
+          ))}
+        </select>
       ),
     },
     {
@@ -112,19 +156,24 @@ export function PageIdees() {
     },
     {
       cle: 'axes',
-      entete: 'Axes de recherche',
-      largeur: '200px',
+      entete: 'Axes',
+      largeur: '120px',
       valeur: (i) => i.axes.map((a) => a.code).join(' '),
-      rendu: (i) => (
-        <div className="etiquettes">
-          {i.axes.map((a) => (
-            <span key={a.id} className="chip chip-lecture" title={a.libelle}>
-              <span className="pastille" style={{ background: couleurAxe(a, sombre) }} />
-              {a.code}
-            </span>
-          ))}
-        </div>
-      ),
+      rendu: (i) =>
+        i.axes.length === 0 ? (
+          <span className="a-qualifier" title="Axe non renseigné — voir la page Qualification">
+            à qualifier
+          </span>
+        ) : (
+          <div className="etiquettes">
+            {i.axes.map((a) => (
+              <span key={a.id} className="chip chip-lecture" title={a.libelle}>
+                <span className="pastille" style={{ background: couleurAxe(a, sombre) }} />
+                {a.code}
+              </span>
+            ))}
+          </div>
+        ),
       edition: (i, fin) => (
         <>
           <ChoixMultiple
@@ -154,7 +203,8 @@ export function PageIdees() {
     {
       cle: 'maj_le',
       entete: 'Modifiée',
-      largeur: '120px',
+      secondaire: true,
+      largeur: '115px',
       valeur: (i) => i.maj_le,
       rendu: (i) => <span className="attenue petit">{formaterDateHeure(i.maj_le)}</span>,
     },
@@ -202,6 +252,7 @@ export function PageIdees() {
       <Tableau
         lignes={visibles}
         colonnes={colonnes}
+        cleColonnes="idees"
         selection={selection}
         onSelection={setSelection}
         onDeposer={(source, cible) => setSelection([...new Set([...selection, source, cible])])}
@@ -244,6 +295,7 @@ function FormulaireIdee({
 }) {
   const sombre = useThemeSombre();
   const [libelle, setLibelle] = useState('');
+  const [statut, setStatut] = useState<StatutIdee>('brute');
   const [axes, setAxes] = useState<number[]>([]);
   const [piloteId, setPiloteId] = useState<number | null>(null);
   const [partenaireId, setPartenaireId] = useState<number | null>(null);
@@ -263,6 +315,7 @@ function FormulaireIdee({
             onClick={() =>
               onEnregistrer({
                 libelle: libelle.trim(),
+                statut,
                 axes,
                 pilote_id: piloteId,
                 partenaire_id: partenaireId,
@@ -278,6 +331,18 @@ function FormulaireIdee({
       <label className="champ">
         <span>Idée <span className="requis">*</span> <span className="attenue">— une phrase</span></span>
         <textarea value={libelle} onChange={(e) => setLibelle(e.target.value)} rows={2} autoFocus />
+      </label>
+
+      <label className="champ">
+        <span>Statut <span className="requis">*</span></span>
+        <select value={statut} onChange={(e) => setStatut(e.target.value as StatutIdee)}>
+          {Object.entries(LIBELLES_STATUT_IDEE).map(([v, l]) => (
+            <option key={v} value={v}>{l}</option>
+          ))}
+        </select>
+        <span className="attenue petit">
+          Une idée reste brute tant que le CODIR ne l'a pas validée ; elle devient ensuite un projet « en préparation ».
+        </span>
       </label>
 
       <label className="champ">

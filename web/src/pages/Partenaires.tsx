@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { api } from '../lib/api';
 import type { Partenaire } from '../lib/types';
+import { LIBELLES_SOURCE_LOCALISATION } from '../lib/types';
 import { formaterDateHeure } from '../lib/utils';
-import { Bandeau, ChoixMultiple, Modale } from '../components/Base';
+import { Bandeau, ChoixMultiple, Modale, SaisieAssistee } from '../components/Base';
 import { EditionTexte, Tableau, type Colonne } from '../components/Tableau';
 import { appliquerFiltres, BarreFiltres, type EtatFiltres, type Facette } from '../components/Filtres';
 import { Carte, type PointCarte } from '../components/Carte';
@@ -20,7 +21,21 @@ export function PagePartenaires() {
 
   const facettes: Facette<Partenaire>[] = useMemo(
     () => [
-      { cle: 'pays', etiquette: 'Pays', valeurs: (p) => [{ id: `c${p.pays}`, libelle: p.pays }] },
+      {
+        cle: 'zone',
+        etiquette: 'Zone',
+        valeurs: (p) => (p.zone ? [{ id: `z${p.zone}`, libelle: p.zone }] : []),
+      },
+      {
+        cle: 'pays',
+        etiquette: 'Pays',
+        valeurs: (p) => (p.pays ? [{ id: `c${p.pays}`, libelle: p.pays }] : [{ id: 'c0', libelle: 'Non localisé' }]),
+      },
+      {
+        cle: 'categorie',
+        etiquette: 'Catégorie',
+        valeurs: (p) => (p.categorie ? [{ id: `k${p.categorie.id}`, libelle: p.categorie.libelle }] : []),
+      },
       {
         cle: 'expertises',
         etiquette: 'Expertise',
@@ -46,6 +61,8 @@ export function PagePartenaires() {
         p.ville,
         p.pays,
         p.notes,
+        p.utile_pour,
+        p.categorie?.libelle,
         ...p.expertises.map((e) => e.libelle),
       ]),
     [base.lignes, facettes, filtres, recherche],
@@ -56,7 +73,7 @@ export function PagePartenaires() {
     .map((p) => ({
       id: p.id,
       libelle: p.nom,
-      sousTitre: `${p.ville}, ${p.pays}${p.expertises.length ? ` — ${p.expertises.map((e) => e.libelle).join(', ')}` : ''}`,
+      sousTitre: `${[p.ville, p.pays].filter(Boolean).join(', ')}${p.expertises.length ? ` — ${p.expertises.map((e) => e.libelle).join(', ')}` : ''}`,
       latitude: p.latitude,
       longitude: p.longitude,
     }));
@@ -71,16 +88,71 @@ export function PagePartenaires() {
     {
       cle: 'ville',
       entete: 'Ville',
-      largeur: '150px',
-      rendu: (p) => p.ville,
-      edition: (p, fin) => <EditionTexte valeur={p.ville} terminer={fin} onValider={(v) => base.majChamp(p.id, 'ville', v)} />,
+      largeur: '160px',
+      valeur: (p) => p.ville ?? '',
+      rendu: (p) =>
+        p.ville ? (
+          <span title={LIBELLES_SOURCE_LOCALISATION[p.localisation_source] ?? p.localisation_source}>
+            {p.ville}
+            {p.localisation_source === 'estimee' && <span className="attenue" title="Localisation estimée, à vérifier"> ~</span>}
+          </span>
+        ) : (
+          <span className="attenue">
+            {p.localisation_source === 'sans_lieu' ? 'sans implantation' : '—'}
+          </span>
+        ),
+      edition: (p, fin) => (
+        <EditionTexte
+          valeur={p.ville ?? ''}
+          terminer={fin}
+          onValider={(v) => base.modifier.mutate({ id: p.id, corps: { ville: v, localisation_source: 'saisie' } })}
+        />
+      ),
     },
     {
       cle: 'pays',
       entete: 'Pays',
-      largeur: '130px',
-      rendu: (p) => p.pays,
-      edition: (p, fin) => <EditionTexte valeur={p.pays} terminer={fin} onValider={(v) => base.majChamp(p.id, 'pays', v)} />,
+      largeur: '120px',
+      valeur: (p) => p.pays ?? '',
+      rendu: (p) => p.pays ?? <span className="attenue">—</span>,
+      edition: (p, fin) => (
+        <EditionTexte valeur={p.pays ?? ''} terminer={fin} onValider={(v) => base.majChamp(p.id, 'pays', v)} />
+      ),
+    },
+    {
+      cle: 'categorie',
+      entete: 'Catégorie',
+      largeur: '150px',
+      valeur: (p) => p.categorie?.libelle ?? '',
+      rendu: (p) =>
+        p.categorie ? <span className="chip chip-lecture">{p.categorie.libelle}</span> : <span className="attenue">—</span>,
+      edition: (p, fin) => (
+        <SaisieAssistee
+          valeur={p.categorie_id}
+          options={(referentiels?.categories_partenaire ?? []).map((c) => ({ id: c.id, libelle: c.libelle }))}
+          onChoisir={(id) => { base.majChamp(p.id, 'categorie_id', id); fin(); }}
+          onCreer={async (libelle) => {
+            const c = await api.creerReference('categories_partenaire', { libelle });
+            return { id: c.id, libelle: c.libelle ?? libelle };
+          }}
+        />
+      ),
+    },
+    {
+      cle: 'utile_pour',
+      entete: 'Utile pour',
+      secondaire: true,
+      largeur: '260px',
+      valeur: (p) => p.utile_pour ?? '',
+      rendu: (p) => p.utile_pour ?? <span className="attenue">—</span>,
+      edition: (p, fin) => (
+        <EditionTexte
+          valeur={p.utile_pour ?? ''}
+          terminer={fin}
+          multiligne
+          onValider={(v) => base.majChamp(p.id, 'utile_pour', v)}
+        />
+      ),
     },
     {
       cle: 'expertises',
@@ -175,6 +247,7 @@ export function PagePartenaires() {
         <Tableau
           lignes={visibles}
           colonnes={colonnes}
+          cleColonnes="partenaires"
           onBasculerVerrou={base.basculerVerrou}
           onSupprimer={(p) => confirm(`Supprimer ${p.nom} ?`) && base.supprimer.mutate(p.id)}
         />
@@ -257,7 +330,7 @@ function FormulairePartenaire({
           <button
             type="button"
             className="btn btn-primaire"
-            disabled={!nom.trim() || !ville.trim() || !pays.trim() || expertises.length === 0 || geocodage}
+            disabled={!nom.trim() || geocodage}
             onClick={creer}
           >
             {geocodage ? 'Localisation…' : 'Créer'}
@@ -272,17 +345,17 @@ function FormulairePartenaire({
 
       <div className="grille-champs">
         <label className="champ">
-          <span>Ville <span className="requis">*</span></span>
+          <span>Ville</span>
           <input type="text" value={ville} onChange={(e) => setVille(e.target.value)} />
         </label>
         <label className="champ">
-          <span>Pays <span className="requis">*</span></span>
+          <span>Pays</span>
           <input type="text" value={pays} onChange={(e) => setPays(e.target.value)} />
         </label>
       </div>
 
       <label className="champ">
-        <span>Expertise <span className="requis">*</span></span>
+        <span>Expertise</span>
         <ChoixMultiple
           valeurs={expertises}
           options={referentiels.expertises.map((e) => ({ id: e.id, libelle: e.libelle }))}
@@ -298,7 +371,7 @@ function FormulairePartenaire({
               if (e.key !== 'Enter' || !nouvelleExpertise.trim()) return;
               e.preventDefault();
               const creee = await api.creerReference('expertises', { libelle: nouvelleExpertise.trim() });
-              referentiels.expertises.push({ id: creee.id, libelle: creee.libelle ?? nouvelleExpertise.trim() });
+              referentiels.expertises.push({ id: creee.id, libelle: creee.libelle ?? nouvelleExpertise.trim(), domaine: null });
               setExpertises([...expertises, creee.id]);
               setNouvelleExpertise('');
             }}
