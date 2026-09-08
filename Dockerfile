@@ -22,6 +22,7 @@ COPY server/package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build-api /app/server/dist ./dist
 COPY server/migrations ./migrations
+COPY server/donnees ./donnees
 COPY --from=build-web /app/web/dist ./public
 
 # Azure App Service injecte PORT ; 8080 est la valeur par défaut hors Azure.

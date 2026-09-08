@@ -9,7 +9,42 @@ de notes brutes.
 Elle remplace la liste Microsoft List actuelle. Le [script d'import](#import-depuis-microsoft-list)
 reprend les données existantes.
 
-## Démarrer en local
+**Pour y accéder tout de suite, voir [Accéder à l'outil](#accéder-à-loutil).**
+
+## Accéder à l'outil
+
+L'application a besoin d'un serveur qui l'exécute : ce n'est pas un fichier
+qu'on ouvre, ni un site déjà en ligne. Trois façons d'y accéder, de la plus
+rapide à la plus durable.
+
+### 1. Sur votre poste, en un double-clic
+
+Le plus rapide pour voir l'outil et le montrer à l'équipe. Nécessite
+[Docker Desktop](https://www.docker.com/products/docker-desktop) (gratuit ;
+son installation demande souvent les droits administrateur).
+
+1. Récupérer le dépôt : sur la page GitHub, **Code → Download ZIP**, puis
+   décompresser.
+2. Déposer le classeur `.xlsx` et l'export `.csv` dans le dossier
+   **`donnees-source/`**.
+3. Double-cliquer sur **`demarrer.bat`** (Windows) ou **`demarrer.sh`** (macOS,
+   Linux).
+
+Le script vérifie Docker, démarre la base et l'application, charge les données
+au premier lancement, puis ouvre **http://localhost:8080**. Les fois suivantes,
+un double-clic suffit : les données sont conservées.
+
+Cette adresse ne fonctionne que sur le poste qui exécute le script — c'est une
+installation individuelle, pas un accès partagé.
+
+### 2. Sur un serveur, pour toute l'équipe
+
+C'est le mode cible : une seule base, que chacun consulte et modifie depuis son
+navigateur. Voir [`docs/deploiement.md`](docs/deploiement.md) — la marche à
+suivre Azure y est détaillée, ainsi que la protection d'accès à activer, qui
+n'est pas optionnelle.
+
+### 3. Pour développer
 
 ```bash
 docker compose up --build        # base + application sur http://localhost:8080

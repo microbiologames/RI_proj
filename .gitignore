@@ -6,3 +6,7 @@ server/public/
 *.log
 .DS_Store
 *.tsbuildinfo
+
+# Fichiers de données réelles déposés pour l'import initial
+donnees-source/*
+!donnees-source/LISEZ-MOI.txt

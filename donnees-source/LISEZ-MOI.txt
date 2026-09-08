@@ -1,0 +1,12 @@
+Déposez ici les deux fichiers de départ, sans les renommer :
+
+  · le classeur de contexte  (.xlsx)  — onglets Équipe, Expertises,
+    Partenaires, Projets, Feuille de route Master
+  · l'export des questions de recherche  (.csv)
+
+Le script de démarrage les repère tout seul et charge la base au premier
+lancement. Ensuite, ce dossier ne sert plus : les données vivent dans la
+base, et c'est l'application qui les modifie.
+
+Ces fichiers ne sont pas versionnés (voir .gitignore) : ils contiennent des
+budgets et des partenariats qui n'ont pas à se retrouver dans le dépôt.

@@ -29,6 +29,10 @@ services:
       ADM_MODELE: ${ADM_MODELE:-claude-opus-5}
       GEOCODE_USER_AGENT: ${GEOCODE_USER_AGENT:-outil-pilotage-RI}
     ports: ['8080:8080']
+    volumes:
+      # Déposez-y le classeur de contexte et l'export CSV des questions,
+      # le script de démarrage s'en sert pour le premier import.
+      - ./donnees-source:/app/donnees-source:ro
 
 volumes:
   donnees:
