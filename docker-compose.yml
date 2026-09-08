@@ -1,0 +1,34 @@
+# Pile complète pour le développement et pour un déploiement autonome
+# (serveur interne, VPS). En production Azure, la base est un service managé :
+# ne lancer alors que le service « app » avec DATABASE_URL pointant dessus.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ri
+      POSTGRES_PASSWORD: ri
+      POSTGRES_DB: ri_proj
+    ports: ['5432:5432']
+    volumes: ['donnees:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ri -d ri_proj']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgres://ri:ri@db:5432/ri_proj
+      PORT: 8080
+      # Renseigner pour activer le module ADM ; sans elle, la saisie manuelle
+      # reste disponible partout dans l'application.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ADM_MODELE: ${ADM_MODELE:-claude-opus-5}
+      GEOCODE_USER_AGENT: ${GEOCODE_USER_AGENT:-outil-pilotage-RI}
+    ports: ['8080:8080']
+
+volumes:
+  donnees:
