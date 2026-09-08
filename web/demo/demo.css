@@ -1,0 +1,42 @@
+/* La bannière est propre à la démonstration : elle n'existe pas dans l'outil
+   installé, et se comporte comme un bandeau d'information collant. */
+.banniere-demo {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+  padding: 7px 16px;
+  background: var(--accent-doux);
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 35%, var(--bordure));
+  color: var(--texte);
+  font-size: 12.5px;
+}
+.banniere-demo > strong:first-child {
+  color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px;
+}
+.banniere-demo details { margin-left: auto; }
+.banniere-demo summary { cursor: pointer; color: var(--accent); }
+.banniere-demo details ul {
+  margin: 6px 0 2px; padding-left: 18px;
+  flex-basis: 100%; color: var(--texte-2);
+}
+.banniere-demo details[open] { flex-basis: 100%; margin-left: 0; }
+
+/* La bannière prend la place de la première ligne : la barre latérale et le
+   contenu se recalent dessous. */
+.banniere-demo + .appli { min-height: calc(100vh - 34px); }
+.banniere-demo + .appli .barre-laterale { height: calc(100vh - 34px); top: 34px; }
+
+/* Message affiché quand une action est indisponible dans la démonstration. */
+.message-demo {
+  position: fixed; z-index: 80; left: 50%; bottom: 22px; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 2px;
+  max-width: min(460px, calc(100vw - 32px));
+  padding: 10px 15px;
+  background: var(--surface); color: var(--texte);
+  border: 1px solid var(--bordure-forte); border-radius: var(--rayon);
+  box-shadow: var(--ombre); font-size: 13px;
+  animation: apparait 160ms ease-out;
+}
+.message-demo span { color: var(--texte-2); font-size: 12px; }
+@keyframes apparait { from { opacity: 0; transform: translate(-50%, 8px); } }
+@media (prefers-reduced-motion: reduce) { .message-demo { animation: none; } }

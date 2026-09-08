@@ -37,14 +37,24 @@ un double-clic suffit : les données sont conservées.
 Cette adresse ne fonctionne que sur le poste qui exécute le script — c'est une
 installation individuelle, pas un accès partagé.
 
-### 2. Sur un serveur, pour toute l'équipe
+### 2. Une page de démonstration, sans rien installer
+
+Pour montrer l'outil sans passer par Docker, `web/demo/` construit une page
+unique qui embarque l'application et un instantané de la base. Elle se manipule
+entièrement — filtres, édition, qualification — mais n'enregistre rien.
+
+Marche à suivre et limites : [`web/demo/LISEZ-MOI.md`](web/demo/LISEZ-MOI.md).
+L'instantané contient les budgets réels : la page reste privée tant qu'elle
+n'est pas explicitement partagée.
+
+### 3. Sur un serveur, pour toute l'équipe
 
 C'est le mode cible : une seule base, que chacun consulte et modifie depuis son
 navigateur. Voir [`docs/deploiement.md`](docs/deploiement.md) — la marche à
 suivre Azure y est détaillée, ainsi que la protection d'accès à activer, qui
 n'est pas optionnelle.
 
-### 3. Pour développer
+### 4. Pour développer
 
 ```bash
 docker compose up --build        # base + application sur http://localhost:8080

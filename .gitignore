@@ -10,3 +10,7 @@ server/public/
 # Fichiers de données réelles déposés pour l'import initial
 donnees-source/*
 !donnees-source/LISEZ-MOI.txt
+
+# Instantané de données réelles pour la démonstration
+web/demo/donnees.json
+web/dist-demo/
