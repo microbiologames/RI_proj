@@ -1,0 +1,11 @@
+# Ouverture d'un accès à la base pour un outil tiers (ERP).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.integration.yml up -d
+#
+# À n'utiliser qu'une fois le rôle de lecture créé (docs/integration-erp.md).
+# Le port n'est publié que sur l'adresse indiquée par ADRESSE_BASE, pour éviter
+# de l'exposer sur toutes les interfaces du serveur.
+services:
+  db:
+    ports:
+      - '${ADRESSE_BASE:-127.0.0.1}:5432:5432'

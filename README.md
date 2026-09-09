@@ -50,9 +50,19 @@ n'est pas explicitement partagée.
 ### 3. Sur un serveur, pour toute l'équipe
 
 C'est le mode cible : une seule base, que chacun consulte et modifie depuis son
-navigateur. Voir [`docs/deploiement.md`](docs/deploiement.md) — la marche à
-suivre Azure y est détaillée, ainsi que la protection d'accès à activer, qui
-n'est pas optionnelle.
+navigateur.
+
+- **Serveur interne** — [`docs/deploiement-serveur-interne.md`](docs/deploiement-serveur-interne.md),
+  écrit pour être transmis tel quel à un service informatique : besoins machine
+  et réseau, installation, sauvegardes, et le point de sécurité à examiner.
+- **Hébergeur externe** — [`docs/deploiement.md`](docs/deploiement.md) (Azure,
+  VPS).
+
+Dans les deux cas, la protection d'accès n'est pas optionnelle : l'application
+ne demande aucune authentification.
+
+Pour faire évoluer l'installation à distance sans donner accès au serveur :
+[`docs/depannage-a-distance.md`](docs/depannage-a-distance.md).
 
 ### 4. Pour développer
 
@@ -144,7 +154,9 @@ docs/     modèle de données, déploiement, décisions
   Service) : sans cela, quiconque connaît l'URL peut tout modifier.
 
 Détails : [`docs/modele-de-donnees.md`](docs/modele-de-donnees.md) ·
-[`docs/deploiement.md`](docs/deploiement.md) · [`docs/decisions.md`](docs/decisions.md)
+[`docs/decisions.md`](docs/decisions.md) ·
+[`docs/integration-erp.md`](docs/integration-erp.md) — comment un ERP se greffe
+sur la base sans figer le modèle.
 
 ## Reprise des données ADRIA
 

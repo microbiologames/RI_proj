@@ -1,17 +1,26 @@
 # Pile complète pour le développement et pour un déploiement autonome
 # (serveur interne, VPS). En production Azure, la base est un service managé :
 # ne lancer alors que le service « app » avec DATABASE_URL pointant dessus.
+# Nom fixe : sans lui, Compose nomme le projet d'après le répertoire, et le
+# volume de données change de nom selon l'endroit où le dépôt est installé —
+# ce qui rendrait les consignes de sauvegarde fausses.
+name: pilotage-ri
+
 services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ri
-      POSTGRES_PASSWORD: ri
-      POSTGRES_DB: ri_proj
-    ports: ['5432:5432']
+      POSTGRES_USER: ${POSTGRES_USER:-ri}
+      # Défini dans .env : un seul endroit à modifier au déploiement.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ri}
+      POSTGRES_DB: ${POSTGRES_DB:-ri_proj}
+    # Le port de la base n'est PAS publié : l'application l'atteint par le
+    # réseau interne de Docker. Pour ouvrir un accès en lecture à un outil
+    # tiers (ERP), voir docs/integration-erp.md — c'est un choix explicite,
+    # pas un état par défaut.
     volumes: ['donnees:/var/lib/postgresql/data']
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ri -d ri_proj']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-ri} -d ${POSTGRES_DB:-ri_proj}']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -21,7 +30,7 @@ services:
     depends_on:
       db: { condition: service_healthy }
     environment:
-      DATABASE_URL: postgres://ri:ri@db:5432/ri_proj
+      DATABASE_URL: postgres://${POSTGRES_USER:-ri}:${POSTGRES_PASSWORD:-ri}@db:5432/${POSTGRES_DB:-ri_proj}
       PORT: 8080
       # Renseigner pour activer le module ADM ; sans elle, la saisie manuelle
       # reste disponible partout dans l'application.
