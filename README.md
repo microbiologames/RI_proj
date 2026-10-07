@@ -30,9 +30,10 @@ son installation demande souvent les droits administrateur).
 3. Double-cliquer sur **`demarrer.bat`** (Windows) ou **`demarrer.sh`** (macOS,
    Linux).
 
-Le script vérifie Docker, démarre la base et l'application, charge les données
-au premier lancement, puis ouvre **http://localhost:8080**. Les fois suivantes,
-un double-clic suffit : les données sont conservées.
+Le script vérifie Docker, tire un mot de passe de base au hasard au premier
+lancement, démarre la base et l'application, charge les données, puis ouvre
+**http://localhost:8080**. Les fois suivantes, un double-clic suffit : les
+données sont conservées.
 
 Cette adresse ne fonctionne que sur le poste qui exécute le script — c'est une
 installation individuelle, pas un accès partagé.
@@ -235,7 +236,8 @@ se propagerait à toute la base.
 
 | Variable | Rôle |
 |---|---|
-| `DATABASE_URL` | Connexion PostgreSQL. `?sslmode=require` active TLS (obligatoire sur Azure). |
+| `POSTGRES_PASSWORD` | Mot de passe de la base. **À changer : le dépôt est public, donc la valeur par défaut aussi — l'application refuse de démarrer avec elle.** |
+| `DATABASE_URL` | Connexion PostgreSQL, déduite des variables `POSTGRES_*` sous docker compose. `?sslmode=require` active TLS. |
 | `PORT` | Port d'écoute (8080 par défaut ; Azure l'injecte). |
 | `ANTHROPIC_API_KEY` | Active le module ADM. Absente, le module est désactivé proprement. |
 | `ADM_MODELE` | Modèle utilisé par l'ADM (`claude-opus-5` par défaut). |

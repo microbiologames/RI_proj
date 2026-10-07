@@ -28,6 +28,16 @@ if errorlevel 1 (
 )
 echo   OK Docker est pret
 
+REM --- Mot de passe ---------------------------------------------------------
+REM Le depot est public : la valeur par defaut l'est aussi, et l'application
+REM refuse de demarrer avec elle. On en tire un au hasard au premier lancement.
+if not exist .env (
+  for /f %%p in ('powershell -NoProfile -Command "-join ((48..57)+(65..90)+(97..122) | Get-Random -Count 32 | %%{[char]$_})"') do set MDP=%%p
+  copy .env.example .env >nul
+  powershell -NoProfile -Command "(Get-Content .env) -replace '^POSTGRES_PASSWORD=.*', 'POSTGRES_PASSWORD=%MDP%' | Set-Content .env"
+  echo   OK Fichier .env cree, mot de passe de la base tire au hasard
+)
+
 REM --- Demarrage ------------------------------------------------------------
 echo.
 echo [2/4] Demarrage de l'application

@@ -71,6 +71,11 @@ Les données concernées sont des projets de recherche, des partenariats et des
 budgets prévisionnels — sensibles au sens commercial, non réglementé. Aucune
 donnée personnelle au-delà des noms et fonctions des collaborateurs de l'équipe.
 
+**Le code source est public** (dépôt GitHub ouvert) ; **les données ne le sont
+pas** et ne transitent jamais par lui. Conséquence pratique : les valeurs par
+défaut du dépôt — à commencer par le mot de passe de la base — sont connues de
+tous, d'où le refus de démarrage évoqué au §3.
+
 ---
 
 ## 3. Installation
@@ -88,8 +93,10 @@ git clone -b claude/ri-projects-visualization-tool-6bmt2i \
 cp .env.example .env
 ```
 
-Éditer `.env` et **remplacer le mot de passe de la base** — c'est le seul
-changement obligatoire :
+Éditer `.env` et **remplacer le mot de passe de la base**. C'est le seul
+changement obligatoire, et il n'est pas facultatif : **le dépôt de code est
+public, la valeur par défaut l'est donc aussi, et l'application refuse de
+démarrer tant qu'elle n'a pas été changée.**
 
 ```ini
 POSTGRES_USER=ri
@@ -99,7 +106,11 @@ PORT=8080
 ```
 
 Un seul endroit à modifier : l'application et la base lisent tous deux ces
-valeurs.
+valeurs. Pour en produire un :
+
+```bash
+tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32; echo
+```
 
 ```bash
 # 3. Construire et démarrer (5 à 10 minutes la première fois)

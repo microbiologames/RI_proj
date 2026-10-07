@@ -50,6 +50,32 @@ if (existsSync(racineStatique)) {
   });
 }
 
+/**
+ * Le dépôt est public : le mot de passe par défaut de la base l'est donc
+ * aussi. Laisser démarrer une installation qui l'a gardé reviendrait à
+ * compter sur la lecture d'une documentation pour toute protection.
+ *
+ * Les lanceurs du poste individuel en tirent un au hasard au premier
+ * démarrage ; un déploiement serveur le pose dans son fichier .env.
+ */
+function verifierMotDePasse(): void {
+  const url = process.env.DATABASE_URL ?? '';
+  const motDePasse = url.match(/^postgres(?:ql)?:\/\/[^:]+:([^@]*)@/)?.[1];
+  const faibles = ['ri', 'postgres', 'password', 'motdepasse', 'changeme', ''];
+
+  if (motDePasse !== undefined && faibles.includes(decodeURIComponent(motDePasse))) {
+    app.log.fatal(
+      'Le mot de passe de la base est resté une valeur par défaut, publiée dans le dépôt.\n' +
+      "  Posez POSTGRES_PASSWORD dans le fichier .env, puis relancez :\n" +
+      "    docker compose down && docker compose up -d\n" +
+      '  Pour un poste individuel, demarrer.sh ou demarrer.bat en génère un.',
+    );
+    process.exit(1);
+  }
+}
+
+verifierMotDePasse();
+
 const port = Number(process.env.PORT ?? 8080);
 
 if (process.env.MIGRER_AU_DEMARRAGE !== 'false') {

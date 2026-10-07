@@ -33,6 +33,20 @@ ok "Docker est prêt"
 # Selon la version : « docker compose » ou « docker-compose ».
 if docker compose version >/dev/null 2>&1; then COMPOSE="docker compose"; else COMPOSE="docker-compose"; fi
 
+# Mot de passe de la base, tiré au hasard au premier démarrage. Le dépôt étant
+# public, la valeur par défaut l'est aussi : l'application refuse de démarrer
+# avec elle.
+if [ ! -f .env ]; then
+  MDP=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)
+  cp .env.example .env
+  if sed --version >/dev/null 2>&1; then
+    sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$MDP/" .env
+  else
+    sed -i '' "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$MDP/" .env   # BSD sed (macOS)
+  fi
+  ok "Fichier .env créé, mot de passe de la base tiré au hasard"
+fi
+
 # --- Démarrage -------------------------------------------------------------
 etape "2/4  Démarrage de l'application"
 note "La toute première fois, la construction prend quelques minutes."
