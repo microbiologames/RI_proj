@@ -58,6 +58,22 @@ Même chose pour les adresses IP internes et les noms de serveurs si votre
 politique les considère comme sensibles — remplacez-les, la logique du
 diagnostic reste valable.
 
+## Le dépôt est public
+
+Le code est ouvert ; **les données ne le sont pas** et n'y transitent jamais.
+Deux conséquences pratiques :
+
+- Les valeurs par défaut du dépôt sont connues de tous. C'est pourquoi
+  l'application refuse de démarrer tant que le mot de passe de la base est resté
+  celui du modèle.
+- Un secret commité par mégarde serait public à la seconde près. Le hook
+  `.githooks/pre-commit` l'empêche en local (`git config core.hooksPath .githooks`
+  une fois par clone) ; la push protection de GitHub prend le relais côté serveur.
+
+Si malgré tout un secret part dans un commit : le révoquer **d'abord**, le
+retirer de l'historique ensuite. Un secret publié puis supprimé reste un secret
+publié.
+
 ## Qui fait quoi
 
 | Tâche | Qui |

@@ -245,6 +245,25 @@ se propagerait à toute la base.
 | `MIGRER_AU_DEMARRAGE` | `false` pour ne pas appliquer les migrations au démarrage. |
 | `LOG_LEVEL` | Niveau de journalisation Fastify. |
 
+## Garde-fou avant commit
+
+Le dépôt est public. Un hook refuse de commiter un secret ou un fichier de
+données réelles — il agit avant le commit, en local, là où un secret écarté
+n'entre jamais dans l'historique et n'a donc pas à en être expurgé.
+
+À activer une fois par clone :
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Il bloque les clés d'API, jetons et clés privées dans les lignes ajoutées, ainsi
+que `.env`, les exports de `donnees-source/` et l'instantané de la démonstration.
+En cas de faux positif : `git commit --no-verify`.
+
+Côté GitHub, il se double de la **push protection**, qui agit au moment du push
+(Settings → Code security).
+
 ## Commandes utiles
 
 ```bash

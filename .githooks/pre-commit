@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Refuse un commit qui emporterait un secret ou un fichier de données réelles.
+#
+# La protection équivalente de GitHub (push protection) agit au moment du push,
+# sur le serveur. Celle-ci agit avant le commit, en local : un secret écarté ici
+# n'entre jamais dans l'historique, et n'a donc pas à en être expurgé.
+#
+# Activation, une fois par clone :
+#   git config core.hooksPath .githooks
+
+set -uo pipefail
+ROUGE='\033[0;31m'; JAUNE='\033[0;33m'; FIN='\033[0m'
+refus=0
+
+signaler() {
+  printf "${ROUGE}  ✗ %s${FIN}\n     %s\n" "$1" "$2"
+  refus=1
+}
+
+fichiers=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$fichiers" ] && exit 0
+
+# --- Fichiers qui ne doivent jamais être versionnés ------------------------
+while IFS= read -r f; do
+  case "$f" in
+    .env|*/.env|.env.local|*/.env.local)
+      signaler "$f" "Fichier d'environnement : il contient des mots de passe. Seul .env.example se versionne." ;;
+    donnees-source/*)
+      [ "$(basename "$f")" = "LISEZ-MOI.txt" ] || \
+        signaler "$f" "Données réelles d'ADRIA : budgets et partenariats n'ont pas à entrer dans un dépôt public." ;;
+    web/demo/donnees.json)
+      signaler "$f" "Instantané des données réelles, destiné à la démonstration uniquement." ;;
+    *.xlsx|*.xlsm|*.csv)
+      case "$f" in
+        *test*|*exemple*|*example*) ;;
+        *) signaler "$f" "Classeur ou export : vérifiez qu'il ne contient pas de données réelles, sinon déplacez-le dans donnees-source/." ;;
+      esac ;;
+  esac
+done <<< "$fichiers"
+
+# --- Motifs de secrets dans le contenu ajouté ------------------------------
+# On n'inspecte que les lignes ajoutées : une occurrence déjà présente dans
+# l'historique n'a pas à bloquer un commit qui ne la touche pas.
+ajouts=$(git diff --cached -U0 | grep '^+' | grep -v '^+++')
+
+verifier_motif() {
+  local motif="$1" nom="$2"
+  if printf '%s' "$ajouts" | grep -qE "$motif"; then
+    signaler "$nom" "Motif repéré dans les lignes ajoutées. Retirez la valeur et utilisez une variable d'environnement."
+  fi
+}
+
+verifier_motif 'sk-ant-[A-Za-z0-9_-]{20,}'                 "clé d'API Anthropic"
+verifier_motif 'sk-[A-Za-z0-9]{32,}'                        "clé d'API"
+verifier_motif 'gh[pousr]_[A-Za-z0-9]{30,}'                 "jeton GitHub"
+verifier_motif 'AKIA[0-9A-Z]{16}'                           "clé d'accès AWS"
+verifier_motif 'BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY' "clé privée"
+verifier_motif 'xox[baprs]-[A-Za-z0-9-]{10,}'               "jeton Slack"
+
+if [ "$refus" -ne 0 ]; then
+  printf "\n${JAUNE}Commit interrompu.${FIN}\n"
+  printf "  Si c'est un faux positif, relancez avec : git commit --no-verify\n\n"
+  exit 1
+fi
