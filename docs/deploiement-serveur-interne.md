@@ -118,12 +118,18 @@ docker compose up -d --build
 
 # 4. Vérifier
 curl -s http://localhost:8080/api/sante
-# attendu : {"statut":"ok","horodatage":"..."}
+# attendu : {"statut":"ok", ..., "donnees":"absentes", "contenu":{...,"axes":4}}
 ```
 
-Les tables sont créées automatiquement au premier démarrage.
+Les tables sont créées automatiquement au premier démarrage, et les
+référentiels avec elles — d'où `axes: 4`. Les données métier, elles, sont
+chargées par l'étape suivante : `donnees: "absentes"` est l'état normal à ce
+point.
 
 ### Chargement des données de départ
+
+**Procédure détaillée, avec les vérifications et les cas d'erreur :
+[`mise-en-service.md`](mise-en-service.md).** En résumé :
 
 Nicolas fournit deux fichiers : un classeur Excel et un export CSV. Les déposer
 dans `/opt/pilotage-ri/donnees-source/`, puis :
@@ -139,7 +145,12 @@ docker compose exec app node dist/import-adria.js \
   /app/donnees-source/<classeur>.xlsx /app/donnees-source/<export>.csv --appliquer
 ```
 
-Attendu : 59 projets, 66 questions, 10 idées, 104 partenaires, 11 collaborateurs.
+Attendu : 59 projets, 66 questions, 10 idées, 104 partenaires, 15 personnes
+(11 de l'équipe R&I, 4 pilotes hors équipe). `/api/sante` les redonne à tout
+moment, ce qui permet de vérifier l'import depuis un navigateur.
+
+Le script refuse de s'appliquer sur une base déjà peuplée : relancer un import
+complet demande `--vider`, qui efface aussi les saisies faites entre-temps.
 
 ---
 

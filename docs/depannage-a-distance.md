@@ -36,8 +36,12 @@ lundi » vaut mieux que dix commandes de diagnostic.
 cd /opt/pilotage-ri
 docker compose ps                     # les conteneurs tournent-ils ?
 docker compose logs --tail=50 app     # que dit l'application ?
-curl -s http://localhost:8080/api/sante   # répond-elle ?
+curl -s http://localhost:8080/api/sante   # répond-elle ? contient-elle les données ?
 ```
+
+`/api/sante` dénombre le contenu de la base : `donnees: "absentes"` veut dire
+que l'import initial n'a pas été fait, et renvoie à
+[`mise-en-service.md`](mise-en-service.md) plutôt qu'à un diagnostic de panne.
 
 ## Ce qu'il ne faut jamais coller
 

@@ -58,6 +58,9 @@ navigateur.
   et réseau, installation, sauvegardes, et le point de sécurité à examiner.
 - **Hébergeur externe** — [`docs/deploiement.md`](docs/deploiement.md) (Azure,
   VPS).
+- **L'application s'affiche mais elle est vide** — c'est attendu : les tables
+  sont créées au démarrage, le chargement des données est une étape à part.
+  [`docs/mise-en-service.md`](docs/mise-en-service.md).
 
 Dans les deux cas, la protection d'accès n'est pas optionnelle : l'application
 ne demande aucune authentification.

@@ -25,9 +25,35 @@ app.setErrorHandler((err, _req, reply) => gererErreur(err, reply));
 
 await app.register(cors, { origin: process.env.CORS_ORIGINE ?? true });
 
+/**
+ * Sonde de bon fonctionnement, et dénombrement du contenu. Le second sert au
+ * déploiement : les tables sont créées au démarrage mais l'import des données
+ * est une étape distincte, et une application vide est indistinguable d'une
+ * application en panne depuis un navigateur. Cette route permet de trancher
+ * sans accès au serveur.
+ */
 app.get('/api/sante', async () => {
-  await pool.query('SELECT 1');
-  return { statut: 'ok', horodatage: new Date().toISOString() };
+  const { rows } = await pool.query<Record<string, string>>(`
+    SELECT (SELECT count(*) FROM projets)             AS projets,
+           (SELECT count(*) FROM idees_brutes)        AS idees,
+           (SELECT count(*) FROM questions_recherche) AS questions,
+           (SELECT count(*) FROM partenaires)         AS partenaires,
+           (SELECT count(*) FROM personnes)           AS personnes,
+           (SELECT count(*) FROM axes_recherche)      AS axes
+  `);
+  const contenu = Object.fromEntries(
+    Object.entries(rows[0]!).map(([cle, valeur]) => [cle, Number(valeur)]),
+  );
+  // Les référentiels sont semés par les migrations ; seules les données
+  // métier distinguent une base importée d'une base neuve.
+  const importee = contenu.projets! + contenu.questions! + contenu.idees! > 0;
+
+  return {
+    statut: 'ok',
+    horodatage: new Date().toISOString(),
+    donnees: importee ? 'importees' : 'absentes',
+    contenu,
+  };
 });
 
 enregistrerReferentiels(app);

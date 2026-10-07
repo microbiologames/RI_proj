@@ -6,10 +6,10 @@
  *   npx tsx src/import-adria.ts contexte.xlsx questions.csv            # simulation
  *   npx tsx src/import-adria.ts contexte.xlsx questions.csv --appliquer
  *
- * Le script est idempotent sur les référentiels (personnes, partenaires,
- * financements…) mais refuse de tourner deux fois sur des bases déjà
- * peuplées : relancer un import complet demande de vider les tables
- * d'abord (--vider).
+ * Le script refuse de tourner sur une base qui contient déjà des projets,
+ * des questions ou des idées : relancer un import complet demande de vider
+ * les tables d'abord (--vider), ce qui efface aussi les saisies faites
+ * depuis l'application.
  */
 import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -102,6 +102,36 @@ const alertes: string[] = [];
 function note(m: string) { journalMessages.push(m); }
 function alerte(m: string) { alertes.push(m); }
 
+/**
+ * Les référentiels sont dédoublonnés par leur clé naturelle, mais les
+ * questions de recherche et les idées brutes n'en ont pas : un second
+ * « --appliquer » les ajouterait une deuxième fois sans rien signaler. On
+ * refuse donc d'écrire dans une base qui contient déjà des données métier, et
+ * on nomme la seule façon voulue de refaire un import complet.
+ */
+async function refuserBasePeuplee(opts: Options): Promise<void> {
+  if (!opts.appliquer || opts.vider) return;
+
+  const [r] = await query<{ projets: number; questions: number; idees: number }>(
+    `SELECT (SELECT count(*) FROM projets)             AS projets,
+            (SELECT count(*) FROM questions_recherche) AS questions,
+            (SELECT count(*) FROM idees_brutes)        AS idees`,
+  );
+  const total = (r?.projets ?? 0) + (r?.questions ?? 0) + (r?.idees ?? 0);
+  if (total === 0) return;
+
+  console.error(
+    `\nLa base contient déjà des données : ${r!.projets} projets, ` +
+      `${r!.questions} questions, ${r!.idees} idées brutes.\n` +
+      "  L'import initial ne se rejoue pas par-dessus : il dupliquerait les questions\n" +
+      '  et les idées brutes, qui n\'ont pas de clé de dédoublonnage.\n\n' +
+      '  · Si cet import a déjà réussi, il n\'y a rien à faire.\n' +
+      '  · Pour repartir des fichiers source et PERDRE les saisies faites dans\n' +
+      "    l'application, ajoutez --vider à la commande.\n",
+  );
+  process.exit(1);
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const fichiers = args.filter((a) => !a.startsWith('--'));
@@ -135,6 +165,8 @@ async function main(): Promise<void> {
     simuler(equipe, expertises, partenaires, projets, questions, villes, propositionsAxes);
     return;
   }
+
+  await refuserBasePeuplee(opts);
 
   await tx(async (c) => {
     if (opts.vider) {
