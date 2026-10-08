@@ -179,13 +179,24 @@ docker update --restart unless-stopped $(docker compose ps -q)
 
 ```bash
 cd /opt/pilotage-ri
-docker compose down
-git pull
-docker compose up -d --build
+./mettre-a-jour.sh
 ```
 
-Les évolutions de schéma s'appliquent seules au démarrage. **Faire un vidage
-avant** (§7).
+Le script sauvegarde la base, récupère le code, reconstruit, et vérifie que
+l'application répond avec ses données. Il refuse de continuer si la sauvegarde
+a échoué ou si des fichiers ont été modifiés sur le serveur — un
+`docker-compose.yml` adapté localement, par exemple, que le `git pull`
+écraserait. En cas d'échec, il affiche les deux commandes de retour arrière.
+
+La sauvegarde n'est pas une précaution de principe : les évolutions de schéma
+s'appliquent au démarrage de l'application, donc sur la vraie base.
+
+**Qui lance ce script ?** À arbitrer, et c'est la seule question ouverte du
+dossier. Un compte sur la VM membre du groupe `docker`, avec accès en écriture
+à `/opt/pilotage-ri`, suffit — ni root, ni accès au reste du réseau. Donné au
+responsable R&I, il évite un ticket par correction d'affichage pendant les
+premières semaines de mise au point. Les options sont comparées dans
+[`faire-evoluer.md`](faire-evoluer.md) §4.
 
 ---
 

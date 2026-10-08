@@ -193,7 +193,47 @@ vidage de sauvegarde d'abord (`docs/deploiement-serveur-interne.md` §7).
 
 ---
 
-## 8. Ensuite
+## 8. Retirer Microsoft List
+
+L'import se fait **après le gel de la liste**, pas avant : tout ce que les chefs
+de projet y saisissent entre l'export et l'import est perdu. L'ordre est donc :
+freeze de la liste → export → import → l'équipe passe sur l'application → la
+liste est archivée en lecture seule.
+
+L'application reprend tout ce que la liste permettait de faire, sur les cinq
+bases (projets, questions de recherche, idées brutes, partenaires, transferts) :
+
+| Dans Microsoft List | Dans l'application |
+|---|---|
+| Ajouter un élément | bouton **+ Nouveau…** en tête de chaque page |
+| Modifier une cellule | édition en place dans le tableau, après déverrouillage |
+| Supprimer un élément | icône de suppression, avec confirmation |
+| Exporter vers Excel | bouton **⬇ Excel** — exporte les lignes **filtrées**, avec les colonnes affichées |
+| Filtrer, trier | chips de filtre cumulables, tri par colonne, sélecteur de colonnes |
+| Historique de version | page **Journal** : qui a changé quoi, champ par champ, exportable |
+| Champs de choix | référentiels créés à la volée en les saisissant |
+
+Deux différences à connaître, parce qu'elles se verront :
+
+**Un axe de recherche est obligatoire à la création** d'un projet, d'une
+question, d'une idée. La liste l'acceptait vide — c'est d'ailleurs pourquoi 27
+projets importés n'en ont pas. Le choix est assumé : l'axe structure le
+diagramme de Venn, l'histogramme et la feuille de route, et un projet sans axe
+n'apparaît nulle part. Les 27 projets existants restent modifiables ; c'est la
+création d'une nouvelle entrée qui le demande.
+
+**Il n'y a pas de pièces jointes.** Si des documents sont accrochés aux éléments
+de la liste — conventions, annexes, livrables — l'application ne les reprend
+pas. Les éléments concernés sont à repérer **avant** l'archivage, et les
+documents à poser sur un partage interne ou SharePoint. Un champ « lien vers le
+dossier » peut être ajouté si le besoin est confirmé : c'est une évolution de
+quelques lignes, voir [`faire-evoluer.md`](faire-evoluer.md).
+
+Enfin, ne supprimez pas la liste : **archivez-la en lecture seule**, et gardez
+l'export qui a servi à l'import. Le temps que l'équipe confirme que rien ne
+manque, c'est le seul filet.
+
+## 9. Ensuite
 
 Le répertoire `donnees-source/` ne sert plus. Les données vivent dans la base,
 et c'est l'application qui les modifie — plus Microsoft List, plus Excel. Les

@@ -65,8 +65,11 @@ navigateur.
 Dans les deux cas, la protection d'accès n'est pas optionnelle : l'application
 ne demande aucune authentification.
 
-Pour faire évoluer l'installation à distance sans donner accès au serveur :
-[`docs/depannage-a-distance.md`](docs/depannage-a-distance.md).
+Une fois en service, les mises à jour passent par `./mettre-a-jour.sh` sur le
+serveur : sauvegarde, `git pull`, reconstruction, vérification.
+**Qui change quoi, et par où ça passe :**
+[`docs/faire-evoluer.md`](docs/faire-evoluer.md). Pour diagnostiquer à distance
+sans accès au serveur : [`docs/depannage-a-distance.md`](docs/depannage-a-distance.md).
 
 ### 4. Pour développer
 
